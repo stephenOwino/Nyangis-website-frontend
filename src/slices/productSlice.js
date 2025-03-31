@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../axios";
-import { uploadProductImage } from "../slices/ImageSlice";
 
 export const fetchProducts = createAsyncThunk(
 	"products/fetchProducts",
@@ -9,13 +8,15 @@ export const fetchProducts = createAsyncThunk(
 			const response = await axiosInstance.get("/api/products", {
 				params: { page, size },
 			});
-			return response.data;
+			return response.data; // Expecting { content, totalElements, totalPages, number }
 		} catch (error) {
 			console.error(
 				"Fetch products error:",
 				error.response?.data || error.message
 			);
-			return rejectWithValue(error.response?.data || error.message);
+			return rejectWithValue(
+				error.response?.data?.message || "Failed to fetch products"
+			);
 		}
 	}
 );
@@ -30,13 +31,15 @@ export const fetchProductsByCategory = createAsyncThunk(
 					params: { page, size },
 				}
 			);
-			return response.data;
+			return response.data; // Expecting { content, totalElements, totalPages, number }
 		} catch (error) {
 			console.error(
 				"Fetch products by category error:",
 				error.response?.data || error.message
 			);
-			return rejectWithValue(error.response?.data || error.message);
+			return rejectWithValue(
+				error.response?.data?.message || "Failed to fetch products by category"
+			);
 		}
 	}
 );
@@ -52,38 +55,19 @@ export const fetchProductById = createAsyncThunk(
 				"Fetch product by ID error:",
 				error.response?.data || error.message
 			);
-			return rejectWithValue(error.response?.data || error.message);
+			return rejectWithValue(
+				error.response?.data?.message || "Product not found"
+			);
 		}
 	}
 );
 
 export const createProduct = createAsyncThunk(
 	"products/createProduct",
-	async ({ product, image }, { rejectWithValue, dispatch }) => {
+	async (product, { rejectWithValue }) => {
 		try {
-			let imageUrl = null;
-			if (image) {
-				console.log("Uploading image:", image.name);
-				const uploadResponse = await dispatch(
-					uploadProductImage(image)
-				).unwrap();
-				imageUrl = uploadResponse;
-				console.log("Image uploaded, URL:", imageUrl);
-			} else {
-				throw new Error("Image is required for new product");
-			}
-			const productData = {
-				description: product.description,
-				status: product.status,
-				category: product.category,
-				imageUrl: imageUrl,
-				price: product.price,
-				location: product.location,
-				type: product.type,
-				condition: product.condition,
-			};
-			console.log("Creating product with data:", productData);
-			const response = await axiosInstance.post("/api/products", productData);
+			console.log("Creating product with data:", product);
+			const response = await axiosInstance.post("/api/products", product);
 			console.log("Product created:", response.data);
 			return response.data;
 		} catch (error) {
@@ -91,39 +75,19 @@ export const createProduct = createAsyncThunk(
 				"Create product error:",
 				error.response?.data || error.message
 			);
-			return rejectWithValue(error.response?.data || error.message);
+			return rejectWithValue(
+				error.response?.data?.message || "Failed to create product"
+			);
 		}
 	}
 );
 
 export const updateProduct = createAsyncThunk(
 	"products/updateProduct",
-	async ({ id, product, image }, { rejectWithValue, dispatch }) => {
+	async ({ id, product }, { rejectWithValue }) => {
 		try {
-			let imageUrl = product.imageUrl;
-			if (image) {
-				console.log("Uploading new image for update:", image.name);
-				const uploadResponse = await dispatch(
-					uploadProductImage(image)
-				).unwrap();
-				imageUrl = uploadResponse;
-				console.log("New image uploaded, URL:", imageUrl);
-			}
-			const productData = {
-				description: product.description,
-				status: product.status,
-				category: product.category,
-				imageUrl: imageUrl,
-				price: product.price,
-				location: product.location,
-				type: product.type,
-				condition: product.condition,
-			};
-			console.log("Updating product with data:", productData);
-			const response = await axiosInstance.put(
-				`/api/products/${id}`,
-				productData
-			);
+			console.log("Updating product with data:", product);
+			const response = await axiosInstance.put(`/api/products/${id}`, product);
 			console.log("Product updated:", response.data);
 			return response.data;
 		} catch (error) {
@@ -131,7 +95,9 @@ export const updateProduct = createAsyncThunk(
 				"Update product error:",
 				error.response?.data || error.message
 			);
-			return rejectWithValue(error.response?.data || error.message);
+			return rejectWithValue(
+				error.response?.data?.message || "Failed to update product"
+			);
 		}
 	}
 );
@@ -148,7 +114,9 @@ export const deleteProduct = createAsyncThunk(
 				"Delete product error:",
 				error.response?.data || error.message
 			);
-			return rejectWithValue(error.response?.data || error.message);
+			return rejectWithValue(
+				error.response?.data?.message || "Failed to delete product"
+			);
 		}
 	}
 );
@@ -174,34 +142,37 @@ const productSlice = createSlice({
 	},
 	extraReducers: (builder) => {
 		builder
+			// fetchProducts
 			.addCase(fetchProducts.pending, (state) => {
 				state.status = "loading";
 			})
 			.addCase(fetchProducts.fulfilled, (state, action) => {
 				state.status = "succeeded";
-				state.products = action.payload.content;
-				state.totalElements = action.payload.totalElements;
-				state.totalPages = action.payload.totalPages;
-				state.currentPage = action.payload.number;
+				state.products = action.payload.content || [];
+				state.totalElements = action.payload.totalElements || 0;
+				state.totalPages = action.payload.totalPages || 0;
+				state.currentPage = action.payload.number || 0;
 			})
 			.addCase(fetchProducts.rejected, (state, action) => {
 				state.status = "failed";
 				state.error = action.payload;
 			})
+			// fetchProductsByCategory
 			.addCase(fetchProductsByCategory.pending, (state) => {
 				state.status = "loading";
 			})
 			.addCase(fetchProductsByCategory.fulfilled, (state, action) => {
 				state.status = "succeeded";
-				state.products = action.payload.content;
-				state.totalElements = action.payload.totalElements;
-				state.totalPages = action.payload.totalPages;
-				state.currentPage = action.payload.number;
+				state.products = action.payload.content || [];
+				state.totalElements = action.payload.totalElements || 0;
+				state.totalPages = action.payload.totalPages || 0;
+				state.currentPage = action.payload.number || 0;
 			})
 			.addCase(fetchProductsByCategory.rejected, (state, action) => {
 				state.status = "failed";
 				state.error = action.payload;
 			})
+			// fetchProductById
 			.addCase(fetchProductById.pending, (state) => {
 				state.status = "loading";
 			})
@@ -212,7 +183,9 @@ const productSlice = createSlice({
 			.addCase(fetchProductById.rejected, (state, action) => {
 				state.status = "failed";
 				state.error = action.payload;
+				state.selectedProduct = null;
 			})
+			// createProduct
 			.addCase(createProduct.pending, (state) => {
 				state.status = "loading";
 			})
@@ -224,6 +197,7 @@ const productSlice = createSlice({
 				state.status = "failed";
 				state.error = action.payload;
 			})
+			// updateProduct
 			.addCase(updateProduct.pending, (state) => {
 				state.status = "loading";
 			})
@@ -235,11 +209,15 @@ const productSlice = createSlice({
 				if (index !== -1) {
 					state.products[index] = action.payload;
 				}
+				if (state.selectedProduct?.id === action.payload.id) {
+					state.selectedProduct = action.payload;
+				}
 			})
 			.addCase(updateProduct.rejected, (state, action) => {
 				state.status = "failed";
 				state.error = action.payload;
 			})
+			// deleteProduct
 			.addCase(deleteProduct.pending, (state) => {
 				state.status = "loading";
 			})
@@ -248,6 +226,9 @@ const productSlice = createSlice({
 				state.products = state.products.filter(
 					(product) => product.id !== action.payload
 				);
+				if (state.selectedProduct?.id === action.payload) {
+					state.selectedProduct = null;
+				}
 			})
 			.addCase(deleteProduct.rejected, (state, action) => {
 				state.status = "failed";

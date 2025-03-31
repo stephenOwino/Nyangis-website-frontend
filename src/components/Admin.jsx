@@ -17,6 +17,8 @@ import toast from "react-hot-toast";
 import { logout } from "../slices/authSlice";
 import axiosInstance from "../../axios";
 
+// ... (other imports and code remain the same)
+
 const Admin = () => {
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
@@ -127,25 +129,29 @@ const Admin = () => {
 			return;
 		}
 
-		if (!image && !editingProduct) {
-			toast.error("Please upload an image for a new product.");
+		if (!editingProduct && (!image || !imageUrl)) {
+			toast.error(
+				"Please upload an image for a new product and wait for the upload to complete."
+			);
 			return;
 		}
 
 		try {
 			if (editingProduct) {
+				const updatedProductData = {
+					...formData,
+					imageUrl: imageUrl || editingProduct.imageUrl, // Use new imageUrl if uploaded, otherwise keep existing
+				};
 				await dispatch(
 					updateProduct({
 						id: editingProduct.id,
-						product: formData,
-						image: image || null,
+						product: updatedProductData,
 					})
 				).unwrap();
 				toast.success("Product updated successfully!");
 			} else {
-				const result = await dispatch(
-					createProduct({ product: formData, image })
-				).unwrap();
+				const productData = { ...formData, imageUrl };
+				const result = await dispatch(createProduct(productData)).unwrap();
 				console.log("Created product:", result);
 				await dispatch(fetchProducts()).unwrap();
 				toast.success("Product created successfully!");
@@ -164,7 +170,8 @@ const Admin = () => {
 			dispatch(clearImageState());
 		} catch (err) {
 			console.error("Failed to save product:", err);
-			toast.error("Failed to save product: " + (err || "Unknown error"));
+			const errorMessage = err.message || err || "Unknown error";
+			toast.error(`Failed to save product: ${errorMessage}`);
 		}
 	};
 
@@ -378,9 +385,11 @@ const Admin = () => {
 									src={`${axiosInstance.defaults.baseURL}${imageUrl}`}
 									alt='Preview'
 									className='w-32 h-32 object-cover rounded'
-									onError={(e) =>
-										console.error("Preview image load failed:", e)
-									}
+									onError={(e) => {
+										e.target.src =
+											"https://via.placeholder.com/150?text=No+Image";
+										console.error("Preview image load failed:", e);
+									}}
 								/>
 							</div>
 						)}
@@ -438,23 +447,29 @@ const Admin = () => {
 						No products available.
 					</p>
 				) : (
-					<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3fisherman lg:grid-cols-4 gap-6'>
+					<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
 						{products.map((product) => (
 							<div
 								key={product.id}
 								className='bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md'
 							>
 								<img
-									src={`${axiosInstance.defaults.baseURL}${product.imageUrl}`}
+									src={
+										product.imageUrl
+											? `${axiosInstance.defaults.baseURL}${product.imageUrl}`
+											: "https://via.placeholder.com/150?text=No+Image"
+									}
 									alt={product.description}
 									className='w-full h-48 object-cover rounded mb-4'
-									onError={(e) =>
+									onError={(e) => {
+										e.target.src =
+											"https://via.placeholder.com/150?text=No+Image";
 										console.error(
 											"Product image load failed:",
 											product.imageUrl,
 											e
-										)
-									}
+										);
+									}}
 								/>
 								<p className='text-gray-600 dark:text-gray-400'>
 									{product.description}
