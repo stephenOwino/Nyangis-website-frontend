@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:80" # Map React app to port 5000 on your host machine
+    networks:
+      - frontend
+    environment:
+      - NODE_ENV=production
+    restart: always # Ensure the app restarts if it fails
+
+networks:
+  frontend:
+    driver: bridge
