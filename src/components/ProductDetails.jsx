@@ -104,14 +104,14 @@ const ProductDetails = () => {
 
 	if (!product) {
 		return (
-			<div className='p-4 sm:p-6 lg:p-8 min-h-screen bg-gray-50 dark:bg-gray-900'>
+			<div className='p-4 sm:p-6 lg:p-8 pt-16 sm:pt-6 lg:pt-8 min-h-screen bg-gray-50 dark:bg-gray-900'>
 				<div className='max-w-5xl mx-auto text-center'>
 					<p className='text-gray-600 dark:text-gray-400 text-lg'>
 						Product not found.
 					</p>
 					<button
 						onClick={() => navigate("/")}
-						className='mt-4 bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-all duration-300'
+						className='mt-4 sm:mt-4 bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-all duration-300'
 					>
 						Back to Homepage
 					</button>
@@ -121,12 +121,12 @@ const ProductDetails = () => {
 	}
 
 	return (
-		<div className='p-4 sm:p-6 lg:p-8 min-h-screen bg-gray-50 dark:bg-gray-900'>
+		<div className='p-4 sm:p-6 lg:p-8 pt-16 sm:pt-6 lg:pt-8 min-h-screen bg-gray-50 dark:bg-gray-900'>
 			<div className='max-w-5xl mx-auto'>
 				{/* Back Button */}
 				<button
 					onClick={() => navigate("/")}
-					className='mb-6 text-purple-600 dark:text-purple-400 hover:underline flex items-center text-lg font-medium'
+					className='mb-4 sm:mb-6 text-purple-600 dark:text-purple-400 hover:underline flex items-center text-lg font-medium'
 				>
 					<svg
 						className='w-5 h-5 mr-2'
@@ -148,37 +148,39 @@ const ProductDetails = () => {
 				{/* Main Content - Grid Layout */}
 				<div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
 					{/* Left Section: Product Image, Seller Info, and Details */}
-					<div className='lg:col-span-2 space-y-6'>
+					<div className='lg:col-span-2 space-y-4 sm:space-y-6'>
 						{/* Product Image and Seller Info */}
 						<div className='bg-white dark:bg-gray-800 rounded-lg shadow-md p-6'>
-							<img
-								src={
-									product.imageUrl
-										? `${axiosInstance.defaults.baseURL}${product.imageUrl}`
-										: "https://via.placeholder.com/300?text=No+Image"
-								}
-								alt={product.description || "Product"}
-								className='w-full h-80 object-contain rounded-lg border border-gray-200 dark:border-gray-700 mb-6'
-								onError={(e) => {
-									e.target.src =
-										"https://via.placeholder.com/300?text=No+Image";
-									console.error(
-										"Product details image load failed:",
-										product.imageUrl,
-										e
-									);
-								}}
-							/>
+							<div className='max-w-lg mx-auto'>
+								<img
+									src={
+										product.imageUrl
+											? `${axiosInstance.defaults.baseURL}${product.imageUrl}`
+											: "https://via.placeholder.com/300?text=No+Image"
+									}
+									alt={product.description || "Product"}
+									className='w-full h-96 object-contain rounded-lg border border-gray-200 dark:border-gray-700 mb-6'
+									onError={(e) => {
+										e.target.src =
+											"https://via.placeholder.com/300?text=No+Image";
+										console.error(
+											"Product details image load failed:",
+											product.imageUrl,
+											e
+										);
+									}}
+								/>
+							</div>
 							<div className='flex space-x-3 mb-6'>
 								<button
-									className='flex-1 bg-blue-900 text-white py-3 rounded-lg flex items-center justify-center hover:bg-green-700 transition-all duration-300'
+									className='flex-1 bg-blue-900 text-white py-3 rounded-lg flex items-center justify-center hover:bg-blue-500 transition-all duration-300'
 									onClick={() => setShowContact(!showContact)}
 								>
 									<span className='mr-2'>📞</span>{" "}
 									{showContact ? "Hide Contact" : "Show Contact"}
 								</button>
 								<button
-									className='flex-1 bg-purple-600 text-white py-3 rounded-lg flex items-center justify-center hover:bg-purple-700 transition-all duration-300'
+									className='flex-1 bg-blue-900 text-white py-3 rounded-lg flex items-center justify-center hover:bg-blue-500 transition-all duration-300'
 									onClick={() =>
 										document
 											.getElementById("chat-section")
@@ -231,25 +233,22 @@ const ProductDetails = () => {
 
 						{/* Product Details */}
 						<div className='bg-white dark:bg-gray-800 rounded-lg shadow-md p-6'>
-							<h2 className='text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-3'>
+							<h2 className='text-2xl font-semibold text-blue-900 dark:text-gray-200 mb-3'>
 								{(product.description || "").split(" ")[0] || "Product"}{" "}
 								{(product.description || "").split(" ")[1] || ""}
 							</h2>
-							<p className='text-gray-600 dark:text-gray-400 text-sm mb-2'>
+							<p className='text-black dark:text-gray-400 text-sm mb-2'>
 								📍 {product.location || "Unknown location"},{" "}
 								{formatTimeAgo(product.postedAt)}
 							</p>
-							<p className='text-gray-600 dark:text-gray-400 text-sm mb-2'>
+							<p className='text-black dark:text-gray-400 text-sm mb-2'>
 								👁️ {product.views || 0} views
 							</p>
-							<p className='text-gray-600 dark:text-gray-400 text-base mb-3'>
+							<p className='text-black dark:text-gray-400 text-base mb-3'>
 								{product.description || "No description available"}
 							</p>
-							<p className='text-gray-600 dark:text-gray-400 text-sm mb-2'>
-								<span className='font-medium'>Type:</span>{" "}
-								{product.type || "N/A"}
-							</p>
-							<p className='text-gray-600 dark:text-gray-400 text-sm'>
+
+							<p className='text-black dark:text-gray-400 text-sm'>
 								<span className='font-medium'>Condition:</span>{" "}
 								{product.condition || "N/A"}
 							</p>
@@ -257,7 +256,7 @@ const ProductDetails = () => {
 					</div>
 
 					{/* Right Section: Price and Safety Tips */}
-					<div className='lg:col-span-1 space-y-6'>
+					<div className='lg:col-span-1 space-y-4 sm:space-y-6'>
 						{/* Price and Call Back */}
 						<div className='bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 sticky top-6'>
 							<p className='text-blue-900 font-bold text-2xl mb-4'>
@@ -273,10 +272,10 @@ const ProductDetails = () => {
 
 						{/* Safety Tips */}
 						<div className='bg-white dark:bg-gray-800 rounded-lg shadow-md p-6'>
-							<h3 className='text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3'>
+							<h3 className='text-lg font-semibold text-blue-900 dark:text-gray-200 mb-3'>
 								Safety Tips
 							</h3>
-							<ul className='text-gray-600 dark:text-gray-400 text-sm list-disc pl-5 space-y-2'>
+							<ul className='text-red-400 dark:text-gray-400 text-sm list-disc pl-5 space-y-2'>
 								<li>Avoid paying in advance, even for delivery</li>
 								<li>Meet with the seller at a safe public place</li>
 								<li>Inspect the item and ensure it’s exactly what you want</li>
@@ -290,24 +289,24 @@ const ProductDetails = () => {
 				</div>
 
 				{/* Post Ad Link */}
-				<div className='text-right mt-6'>
+				<div className='text-right mt-4 sm:mt-6'>
 					<a
 						href='/admin'
-						className='text-green-600 dark:text-green-400 font-semibold hover:underline text-lg'
+						className='text-blue-900 dark:text-blue-900 font-semibold hover:underline text-lg'
 					>
-						Post Ad Like This
+						Post products
 					</a>
 				</div>
 
 				{/* Chat Section */}
 				<div
 					id='chat-section'
-					className='mt-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md'
+					className='mt-6 sm:-mt-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md'
 				>
-					<h2 className='text-2xl font-semibold mb-2 text-gray-800 dark:text-gray-200'>
+					<h2 className='text-2xl font-semibold mb-2 text-blue-900 dark:text-gray-200'>
 						Chat with Seller
 					</h2>
-					<p className='text-gray-600 dark:text-gray-400 text-sm mb-4'>
+					<p className='text-blue-900 dark:text-gray-400 text-sm mb-4'>
 						No account needed to chat! Start the conversation below.
 					</p>
 					<div className='h-48 overflow-y-auto mb-4 p-3 border border-gray-200 dark:border-gray-700 rounded-lg'>
@@ -339,7 +338,7 @@ const ProductDetails = () => {
 						/>
 						<button
 							onClick={sendMessage}
-							className='bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-all duration-300'
+							className='bg-blue-900 text-white px-6 py-3 rounded-lg hover:bg-blue-400 transition-all duration-300'
 						>
 							Send
 						</button>

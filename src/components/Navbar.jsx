@@ -1,11 +1,14 @@
 import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
+import { FaUser, FaWhatsapp } from "react-icons/fa";
 
 const Navbar = ({ toggleDarkMode, isDarkMode, onSearch }) => {
 	const location = useLocation();
 	const isAdmin = location.pathname.startsWith("/admin");
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
+	const [isContactModalOpen, setIsContactModalOpen] = useState(false); // State for contact modal
+	const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false); // State for user dropdown
 
 	// Handle search input change
 	const handleSearchChange = (e) => {
@@ -16,21 +19,28 @@ const Navbar = ({ toggleDarkMode, isDarkMode, onSearch }) => {
 		}
 	};
 
-	// Animation variants for contact info
-	const contactVariants = {
-		hidden: { opacity: 0, y: -20 },
+	// WhatsApp link
+	const whatsappNumber = "254711850739";
+	const whatsappMessage = encodeURIComponent(
+		"Hello, I would like to know more about your products and services."
+	);
+	const whatsappLink = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
+
+	// Animation variants for contact modal and user dropdown
+	const modalVariants = {
+		hidden: { opacity: 0, y: -10 },
 		visible: {
 			opacity: 1,
 			y: 0,
 			transition: {
-				duration: 0.5,
+				duration: 0.3,
 				ease: "easeOut",
-				staggerChildren: 0.2,
+				staggerChildren: 0.1,
 			},
 		},
 	};
 
-	const contactItemVariants = {
+	const modalItemVariants = {
 		hidden: { opacity: 0, x: -10 },
 		visible: { opacity: 1, x: 0 },
 	};
@@ -42,22 +52,23 @@ const Navbar = ({ toggleDarkMode, isDarkMode, onSearch }) => {
 			transition={{ duration: 0.5, ease: "easeOut" }}
 			className='bg-blue-900 dark:bg-black text-white p-4 flex flex-col sm:flex-row justify-between items-center fixed top-0 left-0 w-full z-50 shadow-lg'
 		>
-			{/* Brand Logo */}
+			{/* Brand Logo (Left) */}
 			<motion.div
 				whileHover={{ scale: 1.1 }}
 				transition={{ type: "spring", stiffness: 300 }}
+				className='mb-2 sm:mb-0'
 			>
-				<Link to='/' className='text-xl font-bold mb-2 sm:mb-0'>
+				<Link to='/' className='text-xl font-bold'>
 					Art The Wall
 				</Link>
 			</motion.div>
 
-			{/* Search Bar */}
+			{/* Search Bar (Center) */}
 			<motion.div
 				initial={{ opacity: 0, scale: 0.9 }}
 				animate={{ opacity: 1, scale: 1 }}
 				transition={{ duration: 0.5, delay: 0.2 }}
-				className='flex items-center w-full sm:w-auto mb-2 sm:mb-0'
+				className='flex items-center w-full sm:w-auto mb-2 sm:mb-0 order-1 sm:order-2'
 			>
 				<input
 					type='text'
@@ -84,27 +95,81 @@ const Navbar = ({ toggleDarkMode, isDarkMode, onSearch }) => {
 				</button>
 			</motion.div>
 
-			{/* Navigation Links and Dark Mode Toggle */}
-			<div className='flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 items-center'>
+			{/* Right Side: Contact Us, Admin Links, User Icon, Dark Mode Toggle */}
+			<div className='flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-12 items-center order-2 sm:order-3'>
+				{/* Contact Us Link with Modal */}
+				<div className='relative'>
+					<motion.div
+						whileHover={{ x: 5 }}
+						transition={{ type: "spring", stiffness: 200 }}
+						onMouseEnter={() => setIsContactModalOpen(true)}
+						onMouseLeave={() => setIsContactModalOpen(false)}
+					>
+						<span className='hover:underline cursor-pointer'>Contact Us</span>
+					</motion.div>
+
+					{/* Contact Modal */}
+					{isContactModalOpen && (
+						<motion.div
+							variants={modalVariants}
+							initial='hidden'
+							animate='visible'
+							className='absolute top-full left-4 mt-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white p-4 rounded-lg shadow-lg z-50 w-64'
+							onMouseEnter={() => setIsContactModalOpen(true)}
+							onMouseLeave={() => setIsContactModalOpen(false)}
+						>
+							<motion.div
+								variants={modalItemVariants}
+								className='flex items-center space-x-2 mb-2'
+							>
+								<FaWhatsapp className='text-green-500' />
+								<a
+									href={whatsappLink}
+									target='_blank'
+									rel='noopener noreferrer'
+									className='hover:underline'
+								>
+									0711 850 739
+								</a>
+							</motion.div>
+							<motion.div
+								variants={modalItemVariants}
+								className='flex items-center space-x-2 mb-2'
+							>
+								<span>✉️</span>
+								<a
+									href='mailto:berilanyango52@gmail.com'
+									className='hover:underline'
+								>
+									berilanyango52@gmail.com
+								</a>
+							</motion.div>
+							<motion.div
+								variants={modalItemVariants}
+								className='flex items-center space-x-2'
+							>
+								<span>✉️</span>
+								<a
+									href='mailto:Beril.owino@outlook.com'
+									className='hover:underline'
+								>
+									Beril.owino@outlook.com
+								</a>
+							</motion.div>
+						</motion.div>
+					)}
+				</div>
+
+				{/* Admin Links */}
 				{!isAdmin && (
-					<>
-						<motion.div
-							whileHover={{ x: 5 }}
-							transition={{ type: "spring", stiffness: 200 }}
-						>
-							<Link to='/' className='hover:underline'>
-								Home
-							</Link>
-						</motion.div>
-						<motion.div
-							whileHover={{ x: 5 }}
-							transition={{ type: "spring", stiffness: 200 }}
-						>
-							<Link to='/admin/login' className='hover:underline'>
-								Admin
-							</Link>
-						</motion.div>
-					</>
+					<motion.div
+						whileHover={{ x: 5 }}
+						transition={{ type: "spring", stiffness: 200 }}
+					>
+						<Link to='/admin/login' className='hover:underline'>
+							Admin
+						</Link>
+					</motion.div>
 				)}
 				{isAdmin && (
 					<>
@@ -126,54 +191,61 @@ const Navbar = ({ toggleDarkMode, isDarkMode, onSearch }) => {
 						</motion.div>
 					</>
 				)}
+
+				{/* User Icon with Dropdown */}
+				<div className='relative'>
+					<motion.div
+						whileHover={{ scale: 1.1 }}
+						transition={{ type: "spring", stiffness: 200 }}
+						onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+						className='cursor-pointer'
+					>
+						<FaUser className='text-xl' />
+					</motion.div>
+
+					{/* User Dropdown */}
+					{isUserDropdownOpen && (
+						<motion.div
+							variants={modalVariants}
+							initial='hidden'
+							animate='visible'
+							className='absolute top-full right-0 mt-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white p-4 rounded-lg shadow-lg z-50 w-40'
+						>
+							<motion.div variants={modalItemVariants} className='mb-2'>
+								<Link
+									to='/register'
+									className='block px-4 py-2 bg-blue-700 hover:bg-blue-800 rounded-lg text-center'
+									onClick={() => setIsUserDropdownOpen(false)}
+								>
+									Register
+								</Link>
+							</motion.div>
+							<motion.div variants={modalItemVariants}>
+								<Link
+									to='/login'
+									className='block px-4 py-2 bg-blue-700 hover:bg-blue-800 rounded-lg text-center'
+									onClick={() => setIsUserDropdownOpen(false)}
+								>
+									Login
+								</Link>
+							</motion.div>
+						</motion.div>
+					)}
+				</div>
+
+				{/* Dark Mode Toggle */}
 				<motion.button
 					whileHover={{ rotate: 360 }}
 					transition={{ duration: 0.5 }}
-					onClick={toggleDarkMode}
+					onClick={() => {
+						console.log("Dark mode toggle clicked, current mode:", isDarkMode);
+						toggleDarkMode();
+					}}
 					className='focus:outline-none'
 				>
 					{isDarkMode ? "☀️" : "🌙"}
 				</motion.button>
 			</div>
-
-			{/* Contact Information */}
-			<motion.div
-				className='flex flex-col sm:flex-row items-center sm:space-x-4 mt-2 sm:mt-0 text-sm font-medium'
-				variants={contactVariants}
-				initial='hidden'
-				animate='visible'
-			>
-				<motion.div
-					variants={contactItemVariants}
-					className='flex items-center space-x-1'
-					whileHover={{ scale: 1.05 }}
-				>
-					<span className='hidden sm:inline'>📞</span>
-					<a href='tel:+254711850739' className='hover:underline'>
-						0711 850 739
-					</a>
-				</motion.div>
-				<motion.div
-					variants={contactItemVariants}
-					className='flex items-center space-x-1'
-					whileHover={{ scale: 1.05 }}
-				>
-					<span className='hidden sm:inline'>✉️</span>
-					<a href='mailto:berilanyango52@gmail.com' className='hover:underline'>
-						berilanyango52@gmail.com
-					</a>
-				</motion.div>
-				<motion.div
-					variants={contactItemVariants}
-					className='flex items-center space-x-1'
-					whileHover={{ scale: 1.05 }}
-				>
-					<span className='hidden sm:inline'>✉️</span>
-					<a href='mailto:Beril.owino@outlook.com' className='hover:underline'>
-						Beril.owino@outlook.com
-					</a>
-				</motion.div>
-			</motion.div>
 		</motion.nav>
 	);
 };
