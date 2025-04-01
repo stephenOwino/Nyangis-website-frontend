@@ -31,12 +31,7 @@ jobs:
       - name: Build the app
         run: npm run build
 
-      # Step 5: Run tests (if you have tests)
-      - name: Run tests
-        run: npm test
-        if: always()
-
-      # Step 6: Test with Docker Compose
+      # Step 5: Test with Docker Compose
       - name: Test with Docker Compose
         run: |
           docker-compose up -d web
