@@ -18,8 +18,8 @@ RUN npm run build
 # Step 2: Set up Nginx to serve the production build
 FROM nginx:alpine3.18
 
-# Copy the build folder from the build container to the nginx container
-COPY --from=build /app/build /usr/share/nginx/html
+# Copy the dist folder from the build container to the nginx container
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copy the custom Nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
