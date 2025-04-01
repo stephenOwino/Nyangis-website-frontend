@@ -23,15 +23,24 @@ jobs:
         with:
           node-version: "18"
 
-      # Step 3: Install dependencies
+      # Step 3: Cache node modules
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # Step 4: Install dependencies
       - name: Install dependencies
         run: npm install
 
-      # Step 4: Build the React app
+      # Step 5: Build the React app
       - name: Build the app
         run: npm run build
 
-      # Step 5: Test with Docker Compose
+      # Step 6: Test with Docker Compose
       - name: Test with Docker Compose
         run: |
           docker compose up -d web
@@ -66,49 +75,3 @@ jobs:
             otizaaa/avant-kor-ot:${{ github.sha }}
           build-args: |
             NODE_ENV=production
-
-  deploy-to-ecs:
-    runs-on: ubuntu-latest
-    needs: docker-build-and-push
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Register ECS task definition
-        run: |
-          aws ecs register-task-definition --cli-input-json file://task-definition.json
-
-      - name: Update ECS service
-        run: |
-          SERVICE_EXISTS=$(aws ecs describe-services --cluster avant-kor-ot-cluster --services avant-kor-ot-service --query 'services[0].status' --output text)
-          if [ "$SERVICE_EXISTS" == "ACTIVE" ]; then
-            aws ecs update-service \
-              --cluster avant-kor-ot-cluster \
-              --service avant-kor-ot-service \
-              --task-definition avant-kor-ot \
-              --force-new-deployment
-          else
-            aws ecs create-service \
-              --cluster avant-kor-ot-cluster \
-              --service-name avant-kor-ot-service \
-              --task-definition avant-kor-ot \
-              --desired-count 1 \
-              --launch-type FARGATE \
-              --network-configuration "awsvpcConfiguration={subnets=[${{ secrets.AWS_SUBNET_1 }},${{ secrets.AWS_SUBNET_2 }}],securityGroups=[${{ secrets.AWS_SECURITY_GROUP }}],assignPublicIp=ENABLED}" \
-              --load-balancers "targetGroupArn=${{ secrets.AWS_TARGET_GROUP_ARN }},containerName=avant-kor-ot-container,containerPort=80"
-          fi
