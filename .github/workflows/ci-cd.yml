@@ -34,10 +34,10 @@ jobs:
       # Step 5: Test with Docker Compose
       - name: Test with Docker Compose
         run: |
-          docker-compose up -d web
+          docker compose up -d web
           sleep 10 # Wait for the app to start
           curl --fail http://localhost:5000 || exit 1
-          docker-compose down
+          docker compose down
 
   docker-build-and-push:
     runs-on: ubuntu-latest
